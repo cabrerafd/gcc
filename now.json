@@ -2,9 +2,11 @@
   "name": "grace-city",
   "version": 2,
   "alias": "gracecity.now.sh",
-  "env": {
-    "APP_ID": "@appid",
-    "JS_KEY": "@jskey"
+  "build": {
+    "env": {
+      "APP_ID": "@appid",
+      "JS_KEY": "@jskey"
+    }
   },
   "regions": ["sin1"]
 }
