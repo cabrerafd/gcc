@@ -212,7 +212,7 @@ export default function SignUp() {
             variant='contained'
             color='primary'
             className={classes.submit}
-            disabled={loading}
+            disabled={true}
           >
             Sign Up
             {loading && (
