@@ -8,5 +8,8 @@
       "JS_KEY": "@jskey"
     }
   },
+  "github": {
+    "autoAlias": false
+  },
   "regions": ["sin1"]
 }
