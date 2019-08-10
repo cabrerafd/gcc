@@ -6,5 +6,5 @@
     "APP_ID": "@appId",
     "JS_KEY": "@jsKey"
   },
-  "regions": "sin1"
+  "regions": ["sin1"]
 }
