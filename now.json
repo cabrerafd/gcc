@@ -3,7 +3,8 @@
   "version": 2,
   "alias": "gracecity.now.sh",
   "env": {
-    "APP_ID": "@appId",
-    "JS_KEY": "@jsKey"
-  }
+    "APP_ID": "@appid",
+    "JS_KEY": "@jskey"
+  },
+  "regions": ["sin1"]
 }
