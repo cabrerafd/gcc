@@ -1,5 +1,9 @@
 {
   "name": "grace-city",
   "version": 2,
-  "alias": "gracecity.now.sh"
+  "alias": "gracecity.now.sh",
+  "env": {
+    "APP_ID": "@appId",
+    "JS_KEY": "@jsKey"
+  }
 }
