@@ -4,8 +4,13 @@
   "alias": "gracecity.now.sh",
   "build": {
     "env": {
-      "APP_ID": "@appid",
-      "JS_KEY": "@jskey"
+      "apiKey": "@apikey",
+      "authDomain": "@authdomain",
+      "databaseURL": "@databaseurl",
+      "projectId": "@projectid",
+      "storageBucket": "@storagebucket",
+      "messagingSenderId": "@messagingsenderid",
+      "appId": "@appid"
     }
   },
   "github": {

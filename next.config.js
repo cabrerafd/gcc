@@ -2,7 +2,12 @@ require('dotenv').config()
 
 module.exports = {
   env: {
-    APP_ID: process.env.APP_ID,
-    JS_KEY: process.env.JS_KEY,
+    apiKey: process.env.apiKey,
+    authDomain: process.env.authDomain,
+    databaseURL: process.env.databaseURL,
+    projectId: process.env.projectId,
+    storageBucket: process.env.storageBucket,
+    messagingSenderId: process.env.messagingSenderId,
+    appId: process.env.appId,
   },
 }

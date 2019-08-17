@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import Avatar from '@material-ui/core/Avatar'
 import Button from '@material-ui/core/Button'
 import CssBaseline from '@material-ui/core/CssBaseline'
@@ -9,9 +9,9 @@ import CircularProgress from '@material-ui/core/CircularProgress'
 import Typography from '@material-ui/core/Typography'
 import { makeStyles } from '@material-ui/core/styles'
 import Container from '@material-ui/core/Container'
-import Parse from 'parse'
 import Router from 'next/router'
 import SnackMessage from '../src/components/SnackMessage'
+import firebase from '../src/firebase'
 
 const useStyles = makeStyles(theme => ({
   '@global': {
@@ -51,21 +51,17 @@ export default function SignUp() {
   const [inputs, setInputs] = useState({
     firstName: '',
     lastName: '',
-    username: '',
     email: '',
     password: '',
   })
   const [snack, setSnack] = useState(false)
   const [snackMessage, setSnackMessage] = useState('')
   const [snackVariant, setSnackVariant] = useState('success')
+  const [emailerror, setEmailerror] = useState(false)
+  const emailRef = useRef(null)
 
   useEffect(() => {
     console.log('componentDidMount')
-    Parse.serverURL = 'https://parseapi.back4app.com' // This is your Server URL
-    Parse.initialize(
-      process.env.APP_ID, // This is your Application ID
-      process.env.JS_KEY, // This is your Javascript key
-    )
   }, [])
 
   const handleInputChange = e => {
@@ -79,51 +75,65 @@ export default function SignUp() {
   const formSubmit = e => {
     e.preventDefault()
     setLoading(true)
+    setEmailerror(false)
     const form = inputs
     Object.keys(inputs).map((key, _) => {
       form[key] = inputs[key].toString()
     })
-    const { firstName, lastName, username, email, password } = form
+    const { firstName, lastName, email, password } = form
     const name = `${firstName} ${lastName}`
-    const user = new Parse.User()
-    user.set({ name, username, email, password })
-    user
-      .signUp()
-      .then(result => {
-        console.log(result)
-        Router.push({
-          pathname: '/signin',
-          query: {
-            signup: 'success',
-          },
-        })
+    firebase
+      .auth()
+      .createUserWithEmailAndPassword(email, password)
+      .then(({ user }) => {
+        console.log(user)
+        firebase
+          .database()
+          .ref(`users/${user.uid}`)
+          .set({
+            name,
+            email,
+          })
+          .catch(error => {
+            console.log('Failed to add user details to database')
+            console.log(error)
+            console.log(error.message)
+          })
+        user
+          .sendEmailVerification()
+          .then(_ => {
+            firebase
+              .auth()
+              .signOut()
+              .then(_ => {
+                Router.push('/signin')
+              })
+          })
+          .catch(error => {
+            console.log('Failed to send verification email')
+            console.log(error)
+            console.log(error.message)
+          })
       })
-      .catch(err => {
-        setInputs(inputs => ({
-          ...inputs,
-          password: '',
-        }))
-        setLoading(false)
-        setSnack(true)
-        setSnackVariant('error')
-        setSnackMessage(err.message)
+      .catch(error => {
+        if (error.code === 'auth/email-already-in-use') {
+          emailRef.current.focus()
+          setInputs(inputs => ({
+            ...inputs,
+            password: '',
+          }))
+          setEmailerror(true)
+          setLoading(false)
+          setSnackMessage('Email is already in use.')
+          setSnackVariant('error')
+          setSnack(true)
+        } else {
+          setLoading(false)
+          setSnackMessage(error.code)
+          setSnackVariant('error')
+          setSnack(true)
+        }
       })
-    // user
-    //   .save({ name, username, email, password })
-    //   .then(() => {
-    //     Router.push({
-    //       pathname: '/signin',
-    //       query: {
-    //         signup: 'success',
-    //       },
-    //     })
-    //   })
-    //   .catch(err => {
-    //     setLoading(false)
-    //     setSnack(true)
-    //     setSnackVariant('error')
-    //     setSnackMessage(err.message)
-    //   })
   }
 
   const onSnackClose = () => {
@@ -174,23 +184,13 @@ export default function SignUp() {
                 variant='outlined'
                 required
                 fullWidth
-                name='username'
-                label='Username'
-                autoComplete='username'
-                value={inputs.userName}
-                onChange={handleInputChange}
-              />
-            </Grid>
-            <Grid item xs={12}>
-              <TextField
-                variant='outlined'
-                required
-                fullWidth
                 name='email'
                 label='Email Address'
                 autoComplete='email'
                 value={inputs.email}
                 onChange={handleInputChange}
+                inputRef={emailRef}
+                error={emailerror}
               />
             </Grid>
             <Grid item xs={12}>
@@ -212,7 +212,7 @@ export default function SignUp() {
             variant='contained'
             color='primary'
             className={classes.submit}
-            disabled={true}
+            disabled={loading}
           >
             Sign Up
             {loading && (
