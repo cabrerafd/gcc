@@ -4,13 +4,13 @@
   "alias": "gracecity.now.sh",
   "build": {
     "env": {
-      "apiKey": "@apikey",
-      "authDomain": "@authdomain",
-      "databaseURL": "@databaseurl",
-      "projectId": "@projectid",
-      "storageBucket": "@storagebucket",
-      "messagingSenderId": "@messagingsenderid",
-      "appId": "@appid"
+      "apiKey": "@gccapikey",
+      "authDomain": "@gccauthdomain",
+      "databaseURL": "@gccdatabaseurl",
+      "projectId": "@gccprojectid",
+      "storageBucket": "@gccstoragebucket",
+      "messagingSenderId": "@gccmessagingsenderid",
+      "appId": "@gccappid"
     }
   },
   "regions": ["sin1"],
