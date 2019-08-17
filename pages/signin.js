@@ -14,7 +14,7 @@ import Container from '@material-ui/core/Container'
 import CircularProgress from '@material-ui/core/CircularProgress'
 import Router from 'next/router'
 import SnackMessage from '../src/components/SnackMessage'
-import Parse from 'parse'
+import firebase from '../src/firebase'
 
 const useStyles = makeStyles(theme => ({
   '@global': {
@@ -39,6 +39,13 @@ const useStyles = makeStyles(theme => ({
   submit: {
     margin: theme.spacing(3, 0, 2),
   },
+  buttonProgress: {
+    position: 'absolute',
+    top: '50%',
+    left: '50%',
+    marginTop: -12,
+    marginLeft: -12,
+  },
 }))
 
 function SignIn(props) {
@@ -46,13 +53,16 @@ function SignIn(props) {
   const classes = useStyles()
   const [loading, setLoading] = useState(false)
   const [inputs, setInputs] = useState({
-    identifier: '',
+    email: '',
     password: '',
   })
+  const [emailerror, setEmailerror] = useState(false)
+  const [passworderror, setPassworderror] = useState(false)
   const [snack, setSnack] = useState(false)
   const [snackMessage, setSnackMessage] = useState('')
   const [snackVariant, setSnackVariant] = useState('success')
   const passwordRef = useRef(null)
+  const emailRef = useRef(null)
 
   useEffect(() => {
     if (query.signup === 'success') {
@@ -60,11 +70,6 @@ function SignIn(props) {
       setSnackVariant('success')
       setSnack(true)
     }
-    Parse.serverURL = 'https://parseapi.back4app.com' // This is your Server URL
-    Parse.initialize(
-      process.env.APP_ID, // This is your Application ID
-      process.env.JS_KEY, // This is your Javascript key
-    )
   }, [])
   const onSnackClose = () => {
     setSnack(false)
@@ -81,23 +86,54 @@ function SignIn(props) {
   const formSubmit = e => {
     e.preventDefault()
     setLoading(true)
+    setEmailerror(false)
+    setPassworderror(false)
     const form = inputs
     Object.keys(inputs).map((key, _) => {
       form[key] = inputs[key].toString()
     })
-    const { identifier, password } = form
-    Parse.User.logIn(identifier, password)
-      .then(() => Router.push('/dashboard'))
-      .catch(err => {
-        passwordRef.current.focus()
-        setInputs(inputs => ({
-          ...inputs,
-          password: '',
-        }))
-        setLoading(false)
-        setSnack(true)
-        setSnackVariant('error')
-        setSnackMessage(err.message)
+    const { email, password } = form
+    firebase
+      .auth()
+      .signInWithEmailAndPassword(email, password)
+      .then(({ user }) => {
+        if (user.emailVerified) {
+          Router.push('/dashboard')
+        } else {
+          setSnackMessage('Email is not yet verified')
+          setSnackVariant('error')
+          setSnack(true)
+        }
+      })
+      .catch(error => {
+        if (error.code === 'auth/wrong-password') {
+          passwordRef.current.focus()
+          setInputs(inputs => ({
+            ...inputs,
+            password: '',
+          }))
+          setPassworderror(true)
+          setLoading(false)
+          setSnackMessage('Password is incorrect.')
+          setSnackVariant('error')
+          setSnack(true)
+        } else if (error.code === 'auth/user-not-found') {
+          emailRef.current.focus()
+          setInputs(inputs => ({
+            ...inputs,
+            password: '',
+          }))
+          setEmailerror(true)
+          setLoading(false)
+          setSnackMessage('Email does not exist.')
+          setSnackVariant('error')
+          setSnack(true)
+        } else {
+          setLoading(false)
+          setSnackMessage(error.code)
+          setSnackVariant('error')
+          setSnack(true)
+        }
       })
   }
 
@@ -105,24 +141,28 @@ function SignIn(props) {
     <Container component='main' maxWidth='xs'>
       <CssBaseline />
       <div className={classes.paper}>
-        <Avatar className={classes.avatar}>
-          <LockOutlinedIcon />
-        </Avatar>
+        <Avatar
+          className={classes.avatar}
+          alt='Grace City'
+          src='../static/favicon.ico'
+        />
         <Typography component='h1' variant='h5'>
           Sign in
         </Typography>
         <form className={classes.form} onSubmit={formSubmit}>
           <TextField
+            inputRef={emailRef}
             variant='outlined'
             margin='normal'
             required
             fullWidth
-            label='Username/Email Address'
-            name='identifier'
-            autoComplete='username'
+            label='Email Address'
+            name='email'
+            autoComplete='email'
             autoFocus
-            value={inputs.identifier}
+            value={inputs.email}
             onChange={handleInputChange}
+            error={emailerror}
           />
           <TextField
             inputRef={passwordRef}
@@ -136,6 +176,7 @@ function SignIn(props) {
             autoComplete='current-password'
             value={inputs.password}
             onChange={handleInputChange}
+            error={passworderror}
           />
           {/* <FormControlLabel
             control={<Checkbox value='remember' color='primary' />}
