@@ -13,8 +13,5 @@
       "appId": "@appid"
     }
   },
-  "github": {
-    "autoAlias": false
-  },
   "regions": ["sin1"]
 }
