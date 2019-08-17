@@ -13,5 +13,6 @@
       "appId": "@appid"
     }
   },
-  "regions": ["sin1"]
+  "regions": ["sin1"],
+  "builds": [{ "use": "@now/next@canary" }]
 }
