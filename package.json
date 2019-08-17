@@ -8,8 +8,8 @@
     "@material-ui/styles": "latest",
     "clsx": "latest",
     "dotenv": "^8.0.0",
+    "firebase": "^6.4.0",
     "next": "latest",
-    "parse": "^2.6.0",
     "prop-types": "latest",
     "react": "latest",
     "react-dom": "latest"
