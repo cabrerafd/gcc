@@ -14,5 +14,5 @@
     }
   },
   "regions": ["sin1"],
-  "builds": [{ "use": "@now/next@canary" }]
+  "builds": [{ "src": "package.json", "use": "@now/next@canary" }]
 }
