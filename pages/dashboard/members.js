@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { makeStyles } from '@material-ui/core/styles'
 import Button from '@material-ui/core/Button'
 import Grid from '@material-ui/core/Grid'
@@ -6,11 +6,18 @@ import TextField from '@material-ui/core/TextField'
 import Dialog from '@material-ui/core/Dialog'
 import DialogActions from '@material-ui/core/DialogActions'
 import DialogContent from '@material-ui/core/DialogContent'
-import DialogContentText from '@material-ui/core/DialogContentText'
+import ListItem from '@material-ui/core/ListItem'
+import ListItemIcon from '@material-ui/core/ListItemIcon'
+import ListItemText from '@material-ui/core/ListItemText'
+import LocationIcon from '@material-ui/icons/LocationOn'
+import CakeIcon from '@material-ui/icons/Cake'
+import MailIcon from '@material-ui/icons/Mail'
+import PhoneIcon from '@material-ui/icons/Phone'
 import DialogTitle from '@material-ui/core/DialogTitle'
 import Dashboard from '../../src/layout/dashboard'
 import MaterialTable from '../../src/components/materialtable'
 import firebase from '../../src/firebase'
+import SnackMessage from '../../src/components/SnackMessage'
 
 const useStyles = makeStyles(theme => ({
   button: {
@@ -32,12 +39,81 @@ const useStyles = makeStyles(theme => ({
 export default function Members() {
   const classes = useStyles()
   const [form, openForm] = useState(false)
+  const [loading, setLoading] = useState(true)
+  const [data, setData] = useState([
+    {
+      id: '',
+      name: '',
+      address: '',
+      city: '',
+      province: '',
+      cell_leader: '',
+      birthday: '',
+      email: '',
+      number: '',
+    },
+  ])
+  const [edit, setEdit] = useState(false)
+  const [inputs, setInputs] = useState({
+    name: '',
+    address: '',
+    city: '',
+    province: '',
+    cell_leader: '',
+    birthday: '',
+    email: '',
+    number: '',
+  })
+  const [snack, setSnack] = useState(false)
+  const [snackMessage, setSnackMessage] = useState('')
+  const [snackVariant, setSnackVariant] = useState('success')
+
+  const handleInputChange = e => {
+    e.persist()
+    setInputs(inputs => ({
+      ...inputs,
+      [e.target.name]: e.target.value,
+    }))
+  }
+
+  useEffect(() => {
+    firebase
+      .database()
+      .ref('members')
+      .on('value', data => {
+        const arraydata = []
+        const snapshot = data.val()
+        Object.keys(snapshot).map(key => {
+          const snapshotandid = {
+            id: key,
+            ...snapshot[key],
+          }
+          arraydata.push(snapshotandid)
+        })
+        setData(arraydata)
+        setLoading(false)
+      })
+  }, [])
   function handleOpenForm() {
+    setInputs({
+      name: '',
+      address: '',
+      city: '',
+      province: '',
+      cell_leader: '',
+      birthday: '',
+      email: '',
+      number: '',
+    })
+    setEdit(false)
     openForm(true)
   }
 
   function closeForm() {
     openForm(false)
+  }
+  const onSnackClose = () => {
+    setSnack(false)
   }
   return (
     <Dashboard>
@@ -45,7 +121,89 @@ export default function Members() {
         title='Members'
         columns={[
           { title: 'Name', field: 'name' },
-          { title: 'Cell Leader', field: 'Cell Leader' },
+          { title: 'Cell Leader', field: 'cell_leader' },
+        ]}
+        isLoading={loading}
+        data={data}
+        actions={[
+          {
+            icon: 'edit',
+            tooltip: 'Edit Member',
+            onClick: (_, rowData) => {
+              setEdit(true)
+              setInputs(rowData)
+              openForm(true)
+            },
+          },
+        ]}
+        options={{
+          pageSize: 10,
+          pageSizeOptions: [10, 20, 50, 100],
+          actionsColumnIndex: -1,
+        }}
+        detailPanel={[
+          {
+            render: rowData => {
+              const {
+                address,
+                city,
+                province,
+                birthday,
+                email,
+                number,
+              } = rowData
+              const fullAddress = `${address}, ${city}, ${province}`
+              const parsedate = new Date(birthday)
+              const monthNames = [
+                'January',
+                'February',
+                'March',
+                'April',
+                'May',
+                'June',
+                'July',
+                'August',
+                'September',
+                'October',
+                'November',
+                'December',
+              ]
+              const bday = `${
+                monthNames[parsedate.getMonth()]
+              } ${parsedate.getDate()} ${parsedate.getFullYear()}`
+              const items = [
+                {
+                  item: fullAddress,
+                  icon: LocationIcon,
+                },
+                {
+                  item: bday,
+                  icon: CakeIcon,
+                },
+                {
+                  item: email,
+                  icon: MailIcon,
+                },
+                {
+                  item: number,
+                  icon: PhoneIcon,
+                },
+              ]
+              return (
+                <React.Fragment>
+                  {items.map(({ item, icon: Icon }, key) => (
+                    <ListItem dense key={key}>
+                      <ListItemIcon>
+                        <Icon />
+                      </ListItemIcon>
+                      <ListItemText>{item}</ListItemText>
+                    </ListItem>
+                  ))}
+                </React.Fragment>
+              )
+            },
+            tooltip: 'More Details',
+          },
         ]}
       />
       <Grid
@@ -66,60 +224,95 @@ export default function Members() {
           </Button>
         </Grid>
       </Grid>
-      <AddMembers open={form} closeForm={closeForm} />
+      <AddMembers
+        open={form}
+        closeForm={closeForm}
+        openForm={openForm}
+        inputs={inputs}
+        setInputs={setInputs}
+        handleInputChange={handleInputChange}
+        edit={edit}
+        setSnack={setSnack}
+        setSnackMessage={setSnackMessage}
+        setSnackVariant={setSnackVariant}
+      />
+      <SnackMessage
+        open={snack}
+        onClose={onSnackClose}
+        message={snackMessage}
+        variant={snackVariant}
+      />
     </Dashboard>
   )
 }
 
 function AddMembers(props) {
-  const { open, closeForm } = props
+  const {
+    open,
+    openForm,
+    closeForm,
+    inputs,
+    setInputs,
+    handleInputChange,
+    edit,
+    setSnack,
+    setSnackMessage,
+    setSnackVariant,
+  } = props
   const classes = useStyles()
-  const [inputs, setInputs] = useState({
-    name: '',
-    address: '',
-    city: '',
-    province: '',
-    cell_leader: '',
-    birthday: '',
-    email: '',
-    number: '',
-  })
-
-  const handleInputChange = e => {
-    e.persist()
-    setInputs(inputs => ({
-      ...inputs,
-      [e.target.name]: e.target.value,
-    }))
-  }
-
+  const [loading, setLoading] = useState(false)
   const handleSubmit = e => {
     e.preventDefault()
-    console.log(inputs)
-    firebase
-      .database()
-      .ref()
-      .child('members')
-      .push()
-      .set(inputs)
-      .then(() => {
-        console.log('Member Added')
-        window.scrollTo(0, 0)
-        setInputs({
-          name: '',
-          address: '',
-          city: '',
-          province: '',
-          cell_leader: '',
-          birthday: '',
-          email: '',
-          number: '',
+    setLoading(true)
+    if (edit) {
+      const id = inputs.id
+      delete inputs.id
+      firebase
+        .database()
+        .ref(`members/${id}`)
+        .update(inputs, error => {
+          setLoading(false)
+          if (error) {
+            setSnack(true)
+            setSnackMessage(error.message)
+            setSnackVariant('error')
+            console.log(error)
+          } else {
+            setSnack(true)
+            setSnackMessage('Edit Successful')
+            setSnackVariant('success')
+            openForm(false)
+          }
         })
-      })
-      .catch(error => {
-        console.log(error)
-      })
+    } else {
+      firebase
+        .database()
+        .ref()
+        .child('members')
+        .push()
+        .set(inputs)
+        .then(() => {
+          console.log('Member Added')
+          setInputs({
+            name: '',
+            address: '',
+            city: '',
+            province: '',
+            cell_leader: '',
+            birthday: '',
+            email: '',
+            number: '',
+          })
+        })
+        .catch(error => {
+          console.log(error)
+        })
+        .finally(() => {
+          setLoading(false)
+        })
+    }
   }
+
   const textfieldvariant = 'outlined'
   return (
     <div>
@@ -130,7 +323,7 @@ function AddMembers(props) {
         scroll={'body'}
       >
         <DialogTitle id='form-dialog-title' color='primary'>
-          Add New Member
+          {edit ? 'Edit' : 'Add'} Member
         </DialogTitle>
         <DialogContent>
           <form
@@ -239,8 +432,13 @@ function AddMembers(props) {
               value={inputs.number}
             />
             <DialogActions>
-              <Button color='secondary' size='large' type='submit'>
-                Add
+              <Button
+                color='secondary'
+                size='large'
+                type='submit'
+                disabled={loading}
+              >
+                {edit ? 'Edit' : 'Add'}
               </Button>
               <Button
                 style={{ color: '#FF0000' }}
