@@ -84,12 +84,13 @@ MySnackbarContentWrapper.propTypes = {
 }
 
 export default function SnackMessage(props) {
+  const { vertical, horizontal } = props
   return (
     <React.Fragment>
       <Snackbar
         anchorOrigin={{
-          vertical: 'bottom',
-          horizontal: 'center',
+          vertical: vertical ? vertical : 'bottom',
+          horizontal: horizontal ? horizontal : 'center',
         }}
         open={props.open}
         autoHideDuration={6000}

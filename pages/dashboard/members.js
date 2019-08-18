@@ -19,6 +19,7 @@ import MaterialTable from '../../src/components/materialtable'
 import firebase from '../../src/firebase'
 import SnackMessage from '../../src/components/SnackMessage'
 
+const membersRef = firebase.database().ref('members')
 const useStyles = makeStyles(theme => ({
   button: {
     margin: theme.spacing(1),
@@ -77,22 +78,19 @@ export default function Members() {
   }
 
   useEffect(() => {
-    firebase
-      .database()
-      .ref('members')
-      .on('value', data => {
-        const arraydata = []
-        const snapshot = data.val()
-        Object.keys(snapshot).map(key => {
-          const snapshotandid = {
-            id: key,
-            ...snapshot[key],
-          }
-          arraydata.push(snapshotandid)
-        })
-        setData(arraydata)
-        setLoading(false)
+    membersRef.on('value', data => {
+      const arraydata = []
+      const snapshot = data.val()
+      Object.keys(snapshot).map(key => {
+        const snapshotandid = {
+          id: key,
+          ...snapshot[key],
+        }
+        arraydata.push(snapshotandid)
       })
+      setData(arraydata)
+      setLoading(false)
+    })
   }, [])
   function handleOpenForm() {
     setInputs({
@@ -241,6 +239,7 @@ export default function Members() {
         onClose={onSnackClose}
         message={snackMessage}
         variant={snackVariant}
+        horizontal={'right'}
       />
     </Dashboard>
   )
@@ -267,32 +266,26 @@ function AddMembers(props) {
     if (edit) {
       const id = inputs.id
       delete inputs.id
-      firebase
-        .database()
-        .ref(`members/${id}`)
-        .update(inputs, error => {
-          setLoading(false)
-          if (error) {
-            setSnack(true)
-            setSnackMessage(error.message)
-            setSnackVariant('error')
-            console.log(error)
-          } else {
-            setSnack(true)
-            setSnackMessage('Edit Successful')
-            setSnackVariant('success')
-            openForm(false)
-          }
-        })
+      membersRef.child(id).update(inputs, error => {
+        setLoading(false)
+        if (error) {
+          setSnack(true)
+          setSnackMessage(error.message)
+          setSnackVariant('error')
+        } else {
+          setSnack(true)
+          setSnackMessage('Edit Successful')
+          setSnackVariant('success')
+          openForm(false)
+        }
+      })
     } else {
-      firebase
-        .database()
-        .ref()
-        .child('members')
-        .push()
-        .set(inputs)
-        .then(() => {
-          console.log('Member Added')
+      membersRef.push().set(inputs, error => {
+        if (error) {
+          setSnack(true)
+          setSnackMessage(error.message)
+          setSnackVariant('error')
+        } else {
           setInputs({
             name: '',
             address: '',
@@ -303,13 +296,12 @@ function AddMembers(props) {
             email: '',
             number: '',
           })
-        })
-        .catch(error => {
-          console.log(error)
-        })
-        .finally(() => {
-          setLoading(false)
-        })
+          setSnack(true)
+          setSnackMessage('Member Added')
+          setSnackVariant('success')
+        }
+        setLoading(false)
+      })
     }
   }
 
