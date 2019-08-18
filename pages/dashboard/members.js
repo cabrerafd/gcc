@@ -2,14 +2,15 @@ import React, { useState } from 'react'
 import { makeStyles } from '@material-ui/core/styles'
 import Button from '@material-ui/core/Button'
 import Grid from '@material-ui/core/Grid'
-import Dashboard from '../../src/layout/dashboard'
-import MaterialTable from '../../src/components/materialtable'
 import TextField from '@material-ui/core/TextField'
 import Dialog from '@material-ui/core/Dialog'
 import DialogActions from '@material-ui/core/DialogActions'
 import DialogContent from '@material-ui/core/DialogContent'
 import DialogContentText from '@material-ui/core/DialogContentText'
 import DialogTitle from '@material-ui/core/DialogTitle'
+import Dashboard from '../../src/layout/dashboard'
+import MaterialTable from '../../src/components/materialtable'
+import firebase from '../../src/firebase'
 
 const useStyles = makeStyles(theme => ({
   button: {
@@ -92,7 +93,33 @@ function AddMembers(props) {
     }))
   }
 
-  const handleSubmit = e => {}
+  const handleSubmit = e => {
+    e.preventDefault()
+    console.log(inputs)
+    firebase
+      .database()
+      .ref()
+      .child('members')
+      .push()
+      .set(inputs)
+      .then(() => {
+        console.log('Member Added')
+        window.scrollTo(0, 0)
+        setInputs({
+          name: '',
+          address: '',
+          city: '',
+          province: '',
+          cell_leader: '',
+          birthday: '',
+          email: '',
+          number: '',
+        })
+      })
+      .catch(error => {
+        console.log(error)
+      })
+  }
   const textfieldvariant = 'outlined'
   return (
     <div>
@@ -100,6 +127,7 @@ function AddMembers(props) {
         open={open}
         onClose={closeForm}
         aria-labelledby='form-dialog-title'
+        scroll={'body'}
       >
         <DialogTitle id='form-dialog-title' color='primary'>
           Add New Member
