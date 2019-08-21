@@ -19,7 +19,6 @@ import MaterialTable from 'components/MaterialTable'
 import firebase from 'utils/firebase'
 import SnackMessage from 'components/SnackMessage'
 
-const membersRef = firebase.database().ref('members')
 const useStyles = makeStyles(theme => ({
   button: {
     margin: theme.spacing(1),
@@ -38,6 +37,7 @@ const useStyles = makeStyles(theme => ({
 }))
 
 export default function Members() {
+  const membersCollection = firebase.firestore().collection('members')
   const classes = useStyles()
   const [form, openForm] = useState(false)
   const [loading, setLoading] = useState(true)
@@ -45,25 +45,30 @@ export default function Members() {
     {
       id: '',
       name: '',
-      address: '',
+      street: '',
       city: '',
       province: '',
-      cell_leader: '',
+      leader: '',
       birthday: '',
       email: '',
       number: '',
+      facebook: '',
     },
   ])
   const [edit, setEdit] = useState(false)
   const [inputs, setInputs] = useState({
-    name: '',
-    address: '',
+    id: '',
+    lastName: '',
+    firstName: '',
+    middleInitial: '',
+    street: '',
     city: '',
     province: '',
-    cell_leader: '',
+    leader: '',
     birthday: '',
     email: '',
     number: '',
+    facebook: '',
   })
   const [snack, setSnack] = useState(false)
   const [snackMessage, setSnackMessage] = useState('')
@@ -78,30 +83,38 @@ export default function Members() {
   }
 
   useEffect(() => {
-    membersRef.on('value', data => {
-      const arraydata = []
-      const snapshot = data.val()
-      Object.keys(snapshot).map(key => {
-        const snapshotandid = {
-          id: key,
-          ...snapshot[key],
-        }
-        arraydata.push(snapshotandid)
-      })
-      setData(arraydata)
+    membersCollection.onSnapshot(snapshot => {
+      console.log(snapshot)
       setLoading(false)
     })
+    // membersRef.on('value', data => {
+    //   const arraydata = []
+    //   const snapshot = data.val()
+    //   Object.keys(snapshot).map(key => {
+    //     const snapshotandid = {
+    //       id: key,
+    //       ...snapshot[key],
+    //     }
+    //     arraydata.push(snapshotandid)
+    //   })
+    //   setData(arraydata)
+    //   setLoading(false)
+    // })
   }, [])
   function handleOpenForm() {
     setInputs({
-      name: '',
-      address: '',
+      id: '',
+      lastName: '',
+      firstName: '',
+      middleInitial: '',
+      street: '',
       city: '',
       province: '',
-      cell_leader: '',
+      leader: '',
       birthday: '',
       email: '',
       number: '',
+      facebook: '',
     })
     setEdit(false)
     openForm(true)
@@ -143,14 +156,14 @@ export default function Members() {
           {
             render: rowData => {
               const {
-                address,
+                street,
                 city,
                 province,
                 birthday,
                 email,
                 number,
               } = rowData
-              const fullAddress = `${address}, ${city}, ${province}`
+              const fullAddress = `${street}, ${city}, ${province}`
               const parsedate = new Date(birthday)
               const monthNames = [
                 'January',
@@ -246,6 +259,7 @@ export default function Members() {
 }
 
 function AddMembers(props) {
+  const membersCollection = firebase.firestore().collection('members')
   const {
     open,
     openForm,
@@ -263,46 +277,119 @@ function AddMembers(props) {
   const handleSubmit = e => {
     e.preventDefault()
     setLoading(true)
-    if (edit) {
-      const id = inputs.id
-      delete inputs.id
-      membersRef.child(id).update(inputs, error => {
-        setLoading(false)
-        if (error) {
-          setSnack(true)
-          setSnackMessage(error.message)
-          setSnackVariant('error')
-        } else {
-          setSnack(true)
-          setSnackMessage('Edit Successful')
-          setSnackVariant('success')
-          openForm(false)
-        }
-      })
-    } else {
-      membersRef.push().set(inputs, error => {
-        if (error) {
-          setSnack(true)
-          setSnackMessage(error.message)
-          setSnackVariant('error')
-        } else {
-          setInputs({
-            name: '',
-            address: '',
-            city: '',
-            province: '',
-            cell_leader: '',
-            birthday: '',
-            email: '',
-            number: '',
-          })
-          setSnack(true)
-          setSnackMessage('Member Added')
-          setSnackVariant('success')
-        }
-        setLoading(false)
-      })
+    const {
+      firstName,
+      lastName,
+      middleInitial,
+      street,
+      city,
+      province,
+    } = inputs
+    inputs.name = {
+      first: firstName,
+      last: lastName,
+      middle: middleInitial,
     }
+    inputs.address = {
+      street,
+      city,
+      province,
+    }
+    delete inputs.firstName
+    delete inputs.lastName
+    delete inputs.middleInitial
+    delete inputs.street
+    delete inputs.city
+    delete inputs.province
+    console.log(inputs)
+    // if (edit) {
+    //   const id = inputs.id
+    //   delete inputs.id
+    //   membersCollection
+    //     .doc(id)
+    //     .update(inputs)
+    //     .then(() => {
+    //       setSnack(true)
+    //       setSnackMessage('Edit Successful')
+    //       setSnackVariant('success')
+    //       openForm(false)
+    //     })
+    //     .catch(error => {
+    //       console.log(error)
+    //       setSnack(true)
+    //       setSnackMessage('Error editing member.')
+    //       setSnackVariant('error')
+    //     })
+    //     .finally(() => {
+    //       setLoading(false)
+    //     })
+    //   // membersRef.child(id).update(inputs, error => {
+    //   //   setLoading(false)
+    //   //   if (error) {
+    //   //     setSnack(true)
+    //   //     setSnackMessage(error.message)
+    //   //     setSnackVariant('error')
+    //   //   } else {
+    //   //     setSnack(true)
+    //   //     setSnackMessage('Edit Successful')
+    //   //     setSnackVariant('success')
+    //   //     openForm(false)
+    //   //   }
+    //   // })
+    // } else {
+    //   membersCollection
+    //     .add(inputs)
+    //     .then(() => {
+    //       setInputs({
+    //         id: '',
+    //         lastName: '',
+    //         firstName: '',
+    //         middleInitial: '',
+    //         address: '',
+    //         city: '',
+    //         province: '',
+    //         leader: '',
+    //         birthday: '',
+    //         email: '',
+    //         number: '',
+    //         facebook: '',
+    //       })
+    //       setSnack(true)
+    //       setSnackMessage('Member Added')
+    //       setSnackVariant('success')
+    //     })
+    //     .catch(error => {
+    //       console.log(error)
+    //       setSnack(true)
+    //       setSnackMessage('Error adding member.')
+    //       setSnackVariant('error')
+    //     })
+    //     .finally(() => {
+    //       setLoading(false)
+    //     })
+    //   // membersRef.push().set(inputs, error => {
+    //   //   if (error) {
+    //   //     setSnack(true)
+    //   //     setSnackMessage(error.message)
+    //   //     setSnackVariant('error')
+    //   //   } else {
+    //   //     setInputs({
+    //   //       name: '',
+    //   //       address: '',
+    //   //       city: '',
+    //   //       province: '',
+    //   //       cell_leader: '',
+    //   //       birthday: '',
+    //   //       email: '',
+    //   //       number: '',
+    //   //     })
+    //   //     setSnack(true)
+    //   //     setSnackMessage('Member Added')
+    //   //     setSnackVariant('success')
+    //   //   }
+    //   //   setLoading(false)
+    //   // })
+    // }
   }
 
   const textfieldvariant = 'outlined'
@@ -323,7 +410,54 @@ function AddMembers(props) {
             autoComplete='on'
             onSubmit={handleSubmit}
           >
-            <TextField
+            <Grid container spacing={1}>
+              <Grid item xs={12} sm={4}>
+                <TextField
+                  name='lastName'
+                  label='Last Name'
+                  autoComplete='family-name'
+                  autoFocus
+                  fullWidth
+                  margin='normal'
+                  required
+                  className={classes.textField}
+                  variant={textfieldvariant}
+                  inputProps={{ maxLength: 50 }}
+                  onChange={handleInputChange}
+                  value={inputs.lastName}
+                />
+              </Grid>
+              <Grid item xs={12} sm={4}>
+                <TextField
+                  name='firstName'
+                  label='First Name'
+                  autoComplete='given-name'
+                  fullWidth
+                  margin='normal'
+                  required
+                  className={classes.textField}
+                  variant={textfieldvariant}
+                  inputProps={{ maxLength: 50 }}
+                  onChange={handleInputChange}
+                  value={inputs.firstName}
+                />
+              </Grid>
+              <Grid item xs={12} sm={3}>
+                <TextField
+                  name='middleInitial'
+                  label='Middle Initial'
+                  fullWidth
+                  margin='normal'
+                  required
+                  className={classes.textField}
+                  variant={textfieldvariant}
+                  inputProps={{ maxLength: 2 }}
+                  onChange={handleInputChange}
+                  value={inputs.middleInitial}
+                />
+              </Grid>
+            </Grid>
+            {/* <TextField
               name='name'
               label='Name'
               autoComplete='name'
@@ -336,9 +470,9 @@ function AddMembers(props) {
               inputProps={{ maxLength: 50 }}
               onChange={handleInputChange}
               value={inputs.name}
-            />
+            /> */}
             <TextField
-              name='address'
+              name='street'
               label='Street Address'
               className={classes.textField}
               autoComplete='street-address'
@@ -347,7 +481,8 @@ function AddMembers(props) {
               variant={textfieldvariant}
               inputProps={{ maxLength: 200 }}
               onChange={handleInputChange}
-              value={inputs.address}
+              value={inputs.street}
+              required
             />
             <TextField
               name='city'
@@ -360,6 +495,7 @@ function AddMembers(props) {
               inputProps={{ maxLength: 20 }}
               onChange={handleInputChange}
               value={inputs.city}
+              required
             />
             <TextField
               name='province'
@@ -372,18 +508,7 @@ function AddMembers(props) {
               inputProps={{ maxLength: 20 }}
               onChange={handleInputChange}
               value={inputs.province}
-            />
-            <TextField
-              name='cell_leader'
-              label='Cell Leader'
-              className={classes.textField}
-              fullWidth
-              margin='normal'
               required
-              variant={textfieldvariant}
-              inputProps={{ maxLength: 50 }}
-              onChange={handleInputChange}
-              value={inputs.cell_leader}
             />
             <TextField
               name='birthday'
@@ -397,6 +522,7 @@ function AddMembers(props) {
               }}
               onChange={handleInputChange}
               value={inputs.birthday}
+              required
             />
             <TextField
               name='email'
@@ -410,6 +536,7 @@ function AddMembers(props) {
               inputProps={{ maxLength: 50 }}
               onChange={handleInputChange}
               value={inputs.email}
+              required
             />
             <TextField
               name='number'
@@ -422,6 +549,30 @@ function AddMembers(props) {
               inputProps={{ maxLength: 11 }}
               onChange={handleInputChange}
               value={inputs.number}
+              required
+            />
+            <TextField
+              name='facebook'
+              label='Facebook Username (if any)'
+              className={classes.textField}
+              fullWidth
+              margin='normal'
+              variant={textfieldvariant}
+              inputProps={{ maxLength: 50 }}
+              onChange={handleInputChange}
+              value={inputs.facebook}
+            />
+            <TextField
+              name='leader'
+              label='Cell Leader / Invited By'
+              className={classes.textField}
+              fullWidth
+              margin='normal'
+              required
+              variant={textfieldvariant}
+              inputProps={{ maxLength: 50 }}
+              onChange={handleInputChange}
+              value={inputs.leader}
             />
             <DialogActions>
               <Button
