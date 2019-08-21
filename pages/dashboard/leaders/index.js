@@ -17,7 +17,7 @@ import MailIcon from '@material-ui/icons/Mail'
 import PhoneIcon from '@material-ui/icons/Phone'
 import DialogTitle from '@material-ui/core/DialogTitle'
 import Dashboard from 'components/Dashboard'
-import MaterialTable from 'components/MaterialTable1'
+import MaterialTable from 'components/MaterialTable'
 import firebase from 'utils/firebase'
 import SnackMessage from 'components/SnackMessage'
 
