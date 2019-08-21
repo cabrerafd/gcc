@@ -1,7 +1,7 @@
 {
   "name": "grace-city",
   "version": 2,
-  "alias": "grace-city.now.sh",
+  "alias": "gracecity.now.sh",
   "build": {
     "env": {
       "apiKey": "@gccapikey",
