@@ -1,5 +1,5 @@
 import React from 'react'
-import Dashboard from '../../src/layout/dashboard'
+import Dashboard from 'components/Dashboard'
 import Typography from '@material-ui/core/Typography'
 
 export default function Attendance() {

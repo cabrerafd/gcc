@@ -10,8 +10,8 @@ import Typography from '@material-ui/core/Typography'
 import { makeStyles } from '@material-ui/core/styles'
 import Container from '@material-ui/core/Container'
 import Router from 'next/router'
-import SnackMessage from '../src/components/SnackMessage'
-import firebase from '../src/firebase'
+import SnackMessage from 'components/SnackMessage'
+import firebase from 'utils/firebase'
 
 const useStyles = makeStyles(theme => ({
   '@global': {
@@ -61,7 +61,7 @@ export default function SignUp() {
   const emailRef = useRef(null)
 
   useEffect(() => {
-    console.log('componentDidMount')
+    Router.push('/signin')
   }, [])
 
   const handleInputChange = e => {

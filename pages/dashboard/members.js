@@ -14,10 +14,10 @@ import CakeIcon from '@material-ui/icons/Cake'
 import MailIcon from '@material-ui/icons/Mail'
 import PhoneIcon from '@material-ui/icons/Phone'
 import DialogTitle from '@material-ui/core/DialogTitle'
-import Dashboard from '../../src/layout/dashboard'
-import MaterialTable from '../../src/components/materialtable'
-import firebase from '../../src/firebase'
-import SnackMessage from '../../src/components/SnackMessage'
+import Dashboard from 'components/Dashboard'
+import MaterialTable from 'components/MaterialTable'
+import firebase from 'utils/firebase'
+import SnackMessage from 'components/SnackMessage'
 
 const membersRef = firebase.database().ref('members')
 const useStyles = makeStyles(theme => ({

@@ -18,7 +18,7 @@ import PeopleIcon from '@material-ui/icons/People'
 import HomeIcon from '@material-ui/icons/Home'
 import AssignmentIcon from '@material-ui/icons/Assignment'
 import MenuIcon from '@material-ui/icons/Menu'
-import firebase from '../firebase'
+import firebase from 'utils/firebase'
 
 const useStyles = makeStyles(theme => ({
   root: {

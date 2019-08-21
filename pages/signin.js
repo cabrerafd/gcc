@@ -13,8 +13,8 @@ import { makeStyles } from '@material-ui/core/styles'
 import Container from '@material-ui/core/Container'
 import CircularProgress from '@material-ui/core/CircularProgress'
 import Router from 'next/router'
-import SnackMessage from '../src/components/SnackMessage'
-import firebase from '../src/firebase'
+import SnackMessage from 'components/SnackMessage'
+import firebase from 'utils/firebase'
 
 const useStyles = makeStyles(theme => ({
   '@global': {
@@ -96,17 +96,14 @@ function SignIn(props) {
     firebase
       .auth()
       .signInWithEmailAndPassword(email, password)
-      .then(({ user }) => {
-        if (user.emailVerified) {
-          Router.push('/dashboard')
-        } else {
-          setSnackMessage('Email is not yet verified')
-          setSnackVariant('error')
-          setSnack(true)
-        }
+      .then(() => {
+        Router.push('/dashboard')
       })
       .catch(error => {
-        if (error.code === 'auth/wrong-password') {
+        if (
+          error.code === 'auth/wrong-password' ||
+          error.code === 'auth/user-not-found'
+        ) {
           passwordRef.current.focus()
           setInputs(inputs => ({
             ...inputs,
@@ -114,18 +111,7 @@ function SignIn(props) {
           }))
           setPassworderror(true)
           setLoading(false)
-          setSnackMessage('Password is incorrect.')
-          setSnackVariant('error')
-          setSnack(true)
-        } else if (error.code === 'auth/user-not-found') {
-          emailRef.current.focus()
-          setInputs(inputs => ({
-            ...inputs,
-            password: '',
-          }))
-          setEmailerror(true)
-          setLoading(false)
-          setSnackMessage('Email does not exist.')
+          setSnackMessage('Email/Password is incorrect.')
           setSnackVariant('error')
           setSnack(true)
         } else {
@@ -144,7 +130,7 @@ function SignIn(props) {
         <Avatar
           className={classes.avatar}
           alt='Grace City'
-          src='../static/favicon.ico'
+          src='static/favicon.ico'
         />
         <Typography component='h1' variant='h5'>
           Sign in

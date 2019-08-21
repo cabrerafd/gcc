@@ -19,5 +19,8 @@
     "dev": "next",
     "build": "next build",
     "start": "next start"
+  },
+  "devDependencies": {
+    "babel-plugin-module-resolver": "^3.2.0"
   }
 }
