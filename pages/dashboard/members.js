@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react'
+import PropTypes from 'prop-types'
 import { makeStyles } from '@material-ui/core/styles'
 import Button from '@material-ui/core/Button'
 import Grid from '@material-ui/core/Grid'
@@ -596,4 +597,17 @@ function AddMembers(props) {
       </Dialog>
     </div>
   )
+}
+
+AddMembers.propTypes = {
+  open: PropTypes.bool.isRequired,
+  openForm: PropTypes.func.isRequired,
+  closeForm: PropTypes.func.isRequired,
+  inputs: PropTypes.object.isRequired,
+  setInputs: PropTypes.func.isRequired,
+  handleInputChange: PropTypes.func.isRequired,
+  edit: PropTypes.bool.isRequired,
+  setSnack: PropTypes.func.isRequired,
+  setSnackMessage: PropTypes.func.isRequired,
+  setSnackVariant: PropTypes.func.isRequired,
 }

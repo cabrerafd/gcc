@@ -21,6 +21,7 @@
     "start": "next start"
   },
   "devDependencies": {
-    "babel-plugin-module-resolver": "^3.2.0"
+    "babel-plugin-module-resolver": "^3.2.0",
+    "eslint-plugin-react": "^7.14.3"
   }
 }

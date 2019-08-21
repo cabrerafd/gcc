@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react'
+import PropTypes from 'prop-types'
 import Router from 'next/router'
 import Link from 'next/link'
 import { makeStyles } from '@material-ui/core/styles'
@@ -122,6 +123,7 @@ function DashboardLayout(props) {
             onClose={toggleDrawer(false)}
             onOpen={toggleDrawer(true)}
           >
+            <Toolbar />
             <List className={classes.list}>
               {drawerList.map(({ name, icon: Icon, path }) => (
                 <Link href={`/dashboard${path}`} key={name}>
@@ -159,10 +161,14 @@ const drawerList = [
     path: '/attendance',
   },
   {
-    name: 'Cell Report',
+    name: 'Leaders',
     icon: AssignmentIcon,
-    path: '/cellreport',
+    path: '/leaders',
   },
 ]
+
+DashboardLayout.propTypes = {
+  children: PropTypes.node.isRequired,
+}
 
 export default DashboardLayout
