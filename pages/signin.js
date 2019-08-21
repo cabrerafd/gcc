@@ -48,8 +48,7 @@ const useStyles = makeStyles(theme => ({
   },
 }))
 
-function SignIn(props) {
-  const { query } = props
+function SignIn() {
   const classes = useStyles()
   const [loading, setLoading] = useState(false)
   const [inputs, setInputs] = useState({
@@ -64,13 +63,7 @@ function SignIn(props) {
   const passwordRef = useRef(null)
   const emailRef = useRef(null)
 
-  useEffect(() => {
-    if (query.signup === 'success') {
-      setSnackMessage('Sign Up Success')
-      setSnackVariant('success')
-      setSnack(true)
-    }
-  }, [])
+  useEffect(() => {}, [])
   const onSnackClose = () => {
     setSnack(false)
   }
@@ -203,10 +196,6 @@ function SignIn(props) {
       />
     </Container>
   )
-}
-
-SignIn.getInitialProps = ({ query }) => {
-  return { query }
 }
 
 export default SignIn
